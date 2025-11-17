@@ -1,0 +1,26 @@
+rules:
+  - id: powershell_fim_http_combo
+    title: Suspicious PowerShell + FIM change + outbound HTTP
+    description: >
+      Detects a sequence of suspicious PowerShell, FIM change in roaming profile, and outbound HTTP
+      on the same host within 5 minutes.
+    severity: high
+    window: 5m
+    tags: ["windows", "powershell", "fim", "http"]
+    steps:
+      - name: suspicious_powershell
+        match:
+          source: "powershell-hunt"
+          kind: "process_start"
+          tags_any: ["suspicious", "encoded", "download"]
+      - name: fim_change_roaming
+        match:
+          source: "sentrafim"
+          kind: "file_change"
+          field_contains:
+            path: "AppData\\Roaming"
+      - name: outbound_http
+        match:
+          source: "stealershield"
+          kind: "network_http"
+          tags_any: ["unknown_domain"]
